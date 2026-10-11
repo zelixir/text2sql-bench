@@ -1,0 +1,11 @@
+{
+  "mcp": {
+    "servers": {
+      "text2sql": {
+        "command": "bun",
+        "args": ["run", "src/cli.ts", "mcp", "--docs", "docs", "--db-dir", "eval/sample"],
+        "env": {}
+      }
+    }
+  }
+}

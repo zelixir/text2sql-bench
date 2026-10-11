@@ -1,0 +1,24 @@
+{
+  "name": "text2sql-bench",
+  "version": "0.1.0",
+  "description": "Text2SQL evaluation toolkit: dump DB schema to markdown, index with zvec-grep (zg), serve a stdio MCP (schema search + read-only SQL) for benchmark evals",
+  "type": "module",
+  "bin": {
+    "t2s-bench": "./src/cli.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "demo": "bun run scripts/demo.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "mysql2": "^3.14.0",
+    "pg": "^8.16.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.0",
+    "@types/pg": "^8.15.0",
+    "typescript": "^5.8.0"
+  }
+}

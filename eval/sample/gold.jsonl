@@ -1,0 +1,8 @@
+{"id": "q1", "gold_sql": "SELECT COUNT(*) FROM customers"}
+{"id": "q2", "gold_sql": "SELECT p.name FROM products p JOIN categories c ON p.category_id = c.id WHERE c.name = 'Beverages' ORDER BY p.price ASC"}
+{"id": "q3", "gold_sql": "SELECT city FROM customers GROUP BY city ORDER BY COUNT(*) DESC LIMIT 1"}
+{"id": "q4", "gold_sql": "SELECT SUM(oi.quantity * oi.unit_price) FROM order_items oi JOIN orders o ON oi.order_id = o.id WHERE o.status = 'completed'"}
+{"id": "q5", "gold_sql": "SELECT c.name, COUNT(o.id) FROM customers c LEFT JOIN orders o ON o.customer_id = c.id GROUP BY c.id, c.name ORDER BY COUNT(o.id) DESC"}
+{"id": "q6", "gold_sql": "SELECT name FROM products WHERE id NOT IN (SELECT product_id FROM order_items)"}
+{"id": "q7", "gold_sql": "SELECT c.name, COUNT(p.id) FROM categories c LEFT JOIN products p ON p.category_id = c.id GROUP BY c.id, c.name ORDER BY COUNT(p.id) DESC"}
+{"id": "q8", "gold_sql": "SELECT DISTINCT c.name FROM customers c JOIN orders o ON o.customer_id = c.id WHERE o.status = 'cancelled'"}

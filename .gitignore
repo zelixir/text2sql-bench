@@ -1,0 +1,16 @@
+node_modules/
+.zvec-grep/
+*.log
+.DS_Store
+
+# generated schema docs (rebuild with `t2s-bench export`)
+docs/
+
+# downloaded benchmark datasets (large; rebuild with scripts/download-*.ts)
+eval/datasets/
+
+# sqlite scratch files
+*.sqlite-journal
+*.db-journal
+*.sqlite-wal
+*.sqlite-shm

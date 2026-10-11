@@ -1,0 +1,8 @@
+{"id": "q1", "db": "demo", "question": "How many customers are registered in total?"}
+{"id": "q2", "db": "demo", "question": "List the names of all products in the Beverages category, sorted by price from low to high."}
+{"id": "q3", "db": "demo", "question": "Which city has the most registered customers?"}
+{"id": "q4", "db": "demo", "question": "What is the total revenue of all completed orders? Revenue of an order item is quantity times unit_price."}
+{"id": "q5", "db": "demo", "question": "For each customer, how many orders have they placed? Show the customer name and the order count, ordered by count descending."}
+{"id": "q6", "db": "demo", "question": "Which products have never been ordered? Show their names."}
+{"id": "q7", "db": "demo", "question": "For each category, how many products does it contain? Show the category name and the product count, ordered by count descending."}
+{"id": "q8", "db": "demo", "question": "List the names of customers who have placed at least one cancelled order, without duplicates."}
