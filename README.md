@@ -46,16 +46,14 @@ mcp     --docs <dir> (--db | --db-dir)+ [--max-rows n]   启动 stdio MCP server
 
 ## 在 ZCode 里接 MCP
 
-本仓库自带 `.zcode/config.json`,把 `text2sql` MCP server 注册为 workspace 级(打开本仓库即自动连接):
+本仓库自带 `.zcode/config.json`,注册了两个 workspace 级 server(打开本仓库即自动连接;**MCP 只在会话启动时连接,新注册/改配置后要开新会话才生效**):
 
 ```json
 {
   "mcp": {
     "servers": {
-      "text2sql": {
-        "command": "bun",
-        "args": ["run", "src/cli.ts", "mcp", "--docs", "docs", "--db-dir", "eval/sample"]
-      }
+      "text2sql":         { "command": "bun", "args": ["run", "src/cli.ts", "mcp", "--docs", "docs", "--db-dir", "eval/sample"] },
+      "text2sql-spider":  { "command": "bun", "args": ["run", "src/cli.ts", "mcp", "--docs", "docs", "--db-dir", "eval/datasets/spider/database"] }
     }
   }
 }
@@ -87,34 +85,36 @@ gold 单独放一个文件,求解代理的 prompt 里不会出现 gold,也不告
 
 ### 跑评测
 
-先按「快速开始」导出目标库文档并建索引,然后任选:
+先按「快速开始」导出目标库文档并建索引,然后**打开本仓库根目录的 ZCode 会话**(workspace 级 MCP 自动连接),让 ZCode 用 `CreateWorkflow` 以 `path` 方式提交 `eval/text2sql-eval.workflow.ts`:
 
-- **ZCode 会话里跑**:打开本仓库根目录,让 ZCode 用 `CreateWorkflow` 提交 `eval/text2sql-eval.workflow.ts`(`path` 方式),可传 `args`:`{"datasetDir":"eval/sample","limit":8}`(不传则用脚本内常量 `DATASET_DIR`/`MAX_QUESTIONS`)。
-- 改 `eval/text2sql-eval.workflow.ts` 顶部常量后按名保存运行。
+- 样例数据集(不传 args,等价于 `{"datasetDir":"eval/sample","limit":8,"toolPrefix":"mcp__text2sql__"}`)。
+- Spider 数据集:传 args `{"datasetDir":"eval/datasets/spider-eval","toolPrefix":"mcp__text2sql-spider__","limit":10}`。
 
-评测过程:每题一个求解子代理(只许 Read + `mcp__text2sql__*`,先检索 schema 再写 SQL 并实际执行验证)→ 每题一个评审子代理(把候选 SQL 和 gold SQL 都在真实库上执行,比较结果集判定对错)→ 汇总执行准确率,输出逐题报告。
+评测过程:每题一个求解子代理(只许 Read + `mcp__text2sql*__*`,先检索 schema 再写 SQL 并实际执行验证)→ 每题一个评审子代理(把候选 SQL 和 gold SQL 都在真实库上执行,比较结果集判定对错)→ 汇总执行准确率,输出逐题报告。
 
 ### 公开测试集
 
-用 aria2 下载后,转换为本仓库格式:
+用 aria2 下载后,转换为本仓库格式(已验证的直链,2026-10 实测):
 
 ```bash
-# Spider(95MB,ModelScope 镜像,含全部 SQLite 库)
+# Spider(95MB,ModelScope 镜像,含全部 SQLite 库;1034 dev 题 / 20 库)
 aria2c --no-conf -c -x16 -s16 -o spider.zip \
   "https://www.modelscope.cn/api/v1/datasets/ModelM/spider/repo?Revision=master&FilePath=spider.zip"
 unzip spider.zip -d eval/datasets/spider
 bun run scripts/build-dataset.ts --format spider \
   --dev eval/datasets/spider/dev.json --out eval/datasets/spider-eval
+# 导出 dev 涉及的 20 个库文档:eval/datasets/spider-eval/db-ids.txt 有库清单
+bun run src/cli.ts index --docs docs   # 记得对导出后的 docs 建索引
 
-# BIRD-SQL dev(330MB,官方阿里云 OSS 直链)
+# BIRD-SQL dev(330MB,官方阿里云 OSS 直链;1534 dev 题 / 11 库,含 evidence)
 aria2c --no-conf -c -x16 -s16 -o bird-dev.zip \
   "https://bird-bench.oss-cn-beijing.aliyuncs.com/dev.zip"
 unzip bird-dev.zip -d eval/datasets/bird
+cd eval/datasets/bird/dev_20240627 && unzip -q -o dev_databases.zip -d . && cd -
 bun run scripts/build-dataset.ts --format bird \
-  --dev eval/datasets/bird/dev.json --out eval/datasets/bird-eval
+  --dev eval/datasets/bird/dev_20240627/dev.json --out eval/datasets/bird-eval
+# MCP 指向:eval/datasets/bird/dev_20240627/dev_databases(可在 .zcode/config.json 加一个 server)
 ```
-
-然后对 `eval/datasets/spider/database`(SQLite 库目录)执行 `export --db-dir` + `index --docs`,MCP 用 `--db-dir` 指向同一目录即可(`db` 标签 = 库文件名去扩展名 = 数据集里的 `db_id`)。
 
 ## 评测的约束边界(重要)
 

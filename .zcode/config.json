@@ -5,6 +5,11 @@
         "command": "bun",
         "args": ["run", "src/cli.ts", "mcp", "--docs", "docs", "--db-dir", "eval/sample"],
         "env": {}
+      },
+      "text2sql-spider": {
+        "command": "bun",
+        "args": ["run", "src/cli.ts", "mcp", "--docs", "docs", "--db-dir", "eval/datasets/spider/database"],
+        "env": {}
       }
     }
   }

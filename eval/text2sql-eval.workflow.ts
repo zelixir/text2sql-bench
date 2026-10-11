@@ -1,19 +1,32 @@
 /* zcode-workflow
- *
- * text2sql 评测 workflow —— 在 ZCode 中运行(CreateWorkflow 选本文件,或保存后按名运行):
- *   逐题把自然语言问题交给"求解"子代理生成 SQL,再由"评审"子代理把候选 SQL 与 gold SQL
- *   都通过 text2sql MCP 的 run_sql 在目标库上执行并比较结果集,得到执行准确率。
- *
- * 求解/评审代理的纪律(写在 prompt 里,属软约束):只允许读文件 + 调用 text2sql MCP 工具。
- *
- * 运行前提:
- *   1. 本仓库 .zcode/config.json 已注册名为 text2sql 的 MCP server(工具前缀 mcp__text2sql__);
- *      若你的 server 名不同,改 TOOL_PREFIX。
- *   2. schema 文档已导出并用 zg 建好索引(bun run src/cli.ts export / index)。
- *   3. 数据集目录含 questions.jsonl 与 gold.jsonl(eval/sample 是自带样例)。
- *
- * 可调常量:DATASET_DIR / MAX_QUESTIONS(小规模试跑)。
- */
+args:
+  datasetDir:
+    type: string
+    default: "eval/sample"
+    description: "评测数据集目录(相对 workspace),内含 questions.jsonl 与 gold.jsonl"
+  limit:
+    type: number
+    default: 8
+    description: "本次最多评测的题目数(上限 100)"
+  toolPrefix:
+    type: string
+    default: "mcp__text2sql__"
+    description: "text2sql MCP 工具前缀;评 Spider 数据集时传 mcp__text2sql-spider__"
+*/
+
+// text2sql 评测 workflow —— 在 ZCode 中运行(CreateWorkflow 选本文件,或保存后按名运行):
+//   逐题把自然语言问题交给"求解"子代理生成 SQL,再由"评审"子代理把候选 SQL 与 gold SQL
+//   都通过 text2sql MCP 的 run_sql 在目标库上执行并比较结果集,得到执行准确率。
+//
+// 求解/评审代理的纪律(写在 prompt 里,属软约束):只允许读文件 + 调用 text2sql MCP 工具。
+//
+// 运行前提:
+//   1. .zcode/config.json 已注册 MCP server(默认 text2sql 指向样例库;Spider 用
+//      text2sql-spider,通过 toolPrefix 参数切换工具前缀)。
+//   2. schema 文档已导出并用 zg 建好索引(bun run src/cli.ts export / index)。
+//   3. 数据集目录含 questions.jsonl 与 gold.jsonl(eval/sample 是自带样例)。
+//
+// 不传 args 时用下方常量。
 
 interface Question {
   /** 题目 id */
@@ -64,7 +77,8 @@ interface Outcome {
   tablesUsed: string;
 }
 
-const TOOL_PREFIX = "mcp__text2sql__";
+const TOOL_PREFIX =
+  typeof args.toolPrefix === "string" && args.toolPrefix ? args.toolPrefix : "mcp__text2sql__";
 const DATASET_DIR = "eval/sample";
 const MAX_QUESTIONS = 8;
 
